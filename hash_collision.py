@@ -23,4 +23,4 @@ def hash_collision(k):
             break
 
     return( x, y )
-print(hash_collision(10))
+# print(hash_collision(10))

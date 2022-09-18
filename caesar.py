@@ -30,7 +30,7 @@ def decrypt(key,ciphertext):
         char_arr[i] = hashmap2[char_arr[i]]
     plaintext = ''.join(char_arr)
     return plaintext
-print(encrypt(3,"A"))
-print(decrypt(3,"A"))
+# print(encrypt(3,"A"))
+# print(decrypt(3,"A"))
 
 
