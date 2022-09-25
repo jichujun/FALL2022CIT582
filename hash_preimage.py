@@ -16,3 +16,4 @@ def hash_preimage(target_string):
         if bitn[-len(target_string):] == target_string:
             break
     return( nonce )
+    
