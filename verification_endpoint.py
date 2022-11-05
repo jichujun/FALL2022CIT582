@@ -14,17 +14,17 @@ def verify():
     content = request.get_json(silent=True)
 
     platform = content["payload"]["platform"]
-    pk = content['payload']['pk']
-    sk = content['sig']
+    pk = content["payload"]["pk"]
+    sk = content["sig"]
     payload = json.dumps(content["payload"])
     
     result = False
     if platform == "Ethereum":
 
         eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
-        eth_sig_obj = eth_account.Account.sign_message(eth_encoded_msg,signature=sk)
+        # eth_sig_obj = eth_account.Account.sign_message(eth_encoded_msg,signature=sk)
 
-        if eth_account.Account.recover_message(eth_encoded_msg,signature=eth_sig_obj.signature.hex()) == pk:
+        if eth_account.Account.recover_message(eth_encoded_msg,signature=sk) == pk:
             print('Ethereum verified')
             result = True
 
