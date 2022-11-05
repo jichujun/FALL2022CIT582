@@ -62,3 +62,6 @@ def tradeTokens(sell_token: address, sell_quantity: uint256):
 def ownerWithdraw():
     assert sell_token == self.tokenA.address or sell_token == self.tokenB.address
 	#Your code here
+    self.tokenA.transfer(self.owner,self.tokenAQty)
+	self.tokenB.transfer(self.owner,self.tokenBQty)
+	selfdestruct(self.owner)
