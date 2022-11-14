@@ -18,7 +18,7 @@ def process_order(order):
     session.add(newOrder)
     #2. Check if there are matched order
     for orderToCheck in session.query(Order).filter(Order.filled == None).all():
-        if orderToCheck.buy_currency == newOrder.sell_currency and orderToCheck.sell_currency == order.buy_currency:
+        if orderToCheck.buy_currency == newOrder.sell_currency and orderToCheck.sell_currency == newOrder.buy_currency:
             if orderToCheck.sell_amount/orderToCheck.buy_amount >= newOrder.buy_amount/orderToCheck.sell_amount:
                 # set the timestamp
                 time = datetime.now()
