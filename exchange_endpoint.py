@@ -79,8 +79,6 @@ def connect_to_blockchains():
         if w3_flag or not g.w3.isConnected():
             g.w3 = connect_to_eth()
     except Exception as e:
-        print("Trying to connect to web3 again")
-        print(traceback.format_exc())
         g.w3 = connect_to_eth()
         
 """ End of pre-defined methods """
@@ -89,65 +87,32 @@ def connect_to_blockchains():
 
 def log_message(message_dict):
     msg = json.dumps(message_dict)
-    print(msg)
-    # TODO: Add message to the Log table
-    
     return
 
 def get_algo_keys():
-    
-    # TODO: Generate or read (using the mnemonic secret) 
-    # the algorand public/private keys
     algo_sk, algo_pk = algosdk.account.generate_account()
     return algo_sk, algo_pk
 
 
 def get_eth_keys(filename = "eth_mnemonic.txt"):
     w3 = Web3()
-    # TODO: Generate or read (using the mnemonic secret) 
-    # the ethereum public/private keys
     w3.eth.account.enable_unaudited_hdwallet_features()
     acct,mnemonic_secret = w3.eth.account.create_with_mnemonic()
 
-    eth_pk = acct.address
+    eth_pk1 = acct.address
     eth_sk = acct.key
     
-    return eth_sk, eth_pk
-  
-def fill_order(order, txes=[]):
-    # TODO: 
-    # Match orders (same as Exchange Server II)
-    # Validate the order has a payment to back it (make sure the counterparty also made a payment)
-    # Make sure that you end up executing all resulting transactions!
-
-    # If your fill_order function is recursive, and you want to have fill_order return a list of transactions to be filled, 
-    # Then you can use the "txes" argument to pass the current list of txes down the recursion
-    # Note: your fill_order function is *not* required to be recursive, and it is *not* required that it return a list of transactions, 
-    # but executing a group of transactions can be more efficient, and gets around the Ethereum nonce issue described in the instructions
-    
-    pass
+    return eth_sk, eth_pk1
   
 def execute_txes(txes):
     if txes is None:
         return True
     if len(txes) == 0:
         return True
-    print( f"Trying to execute {len(txes)} transactions" )
-    print( f"IDs = {[tx['order_id'] for tx in txes]}" )
-    eth_sk, eth_pk = get_eth_keys()
+    eth_sk, eth_pk1 = get_eth_keys()
     algo_sk, algo_pk = get_algo_keys()
-    
-    if not all( tx['platform'] in ["Algorand","Ethereum"] for tx in txes ):
-        print( "Error: execute_txes got an invalid platform!" )
-        print( tx['platform'] for tx in txes )
-
     algo_txes = [tx for tx in txes if tx['platform'] == "Algorand" ]
     eth_txes = [tx for tx in txes if tx['platform'] == "Ethereum" ]
-
-    # TODO: 
-    #       1. Send tokens on the Algorand and eth testnets, appropriately
-    #          We've provided the send_tokens_algo and send_tokens_eth skeleton methods in send_tokens.py
-    #       2. Add all transactions to the TX table
 
     pass
 
@@ -157,18 +122,15 @@ def execute_txes(txes):
 def address():
     if request.method == "POST":
         content = request.get_json(silent=True)
-        print(content)
         if 'platform' not in content.keys():
-            print( f"Error: no platform provided" )
             return jsonify( "Error: no platform provided" )
         if not content['platform'] in ["Ethereum", "Algorand"]:
-            print( f"Error: {content['platform']} is an invalid platform" )
             return jsonify( f"Error: invalid platform provided: {content['platform']}"  )
         
         if content['platform'] == "Ethereum":
             #Your code here
-            eth_sk, eth_pk = get_eth_keys()
-            return jsonify( eth_pk )
+            eth_sk, eth_pk1 = get_eth_keys()
+            return jsonify( eth_pk1 )
         if content['platform'] == "Algorand":
             #Your code here
             algo_sk, algo_pk = get_algo_keys()
@@ -206,7 +168,7 @@ def trade():
         
         # 1. Check the signature
         algo_sk, algo_pk = get_algo_keys()
-        eth_sk, eth_pk = get_eth_keys()
+        eth_sk, eth_pk1 = get_eth_keys()
         
         result = False
     
