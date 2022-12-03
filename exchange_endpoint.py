@@ -164,7 +164,7 @@ def trade():
             return jsonify( False )
         
         # Your code here
-        return jsonify(False)
+        # return jsonify(False)
         
         # 1. Check the signature
         algo_sk, algo_pk = get_algo_keys()
