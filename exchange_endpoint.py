@@ -12,6 +12,7 @@ from datetime import datetime
 import math
 import sys
 import traceback
+from web3 import Web3
 
 # TODO: make sure you implement connect_to_algo, send_tokens_algo, and send_tokens_eth
 from send_tokens import connect_to_algo, connect_to_eth, send_tokens_algo, send_tokens_eth
@@ -78,8 +79,6 @@ def connect_to_blockchains():
         if w3_flag or not g.w3.isConnected():
             g.w3 = connect_to_eth()
     except Exception as e:
-        print("Trying to connect to web3 again")
-        print(traceback.format_exc())
         g.w3 = connect_to_eth()
         
 """ End of pre-defined methods """
@@ -88,56 +87,32 @@ def connect_to_blockchains():
 
 def log_message(message_dict):
     msg = json.dumps(message_dict)
-
-    # TODO: Add message to the Log table
-    
     return
 
 def get_algo_keys():
-    
-    # TODO: Generate or read (using the mnemonic secret) 
-    # the algorand public/private keys
-    
+    algo_sk, algo_pk = algosdk.account.generate_account()
     return algo_sk, algo_pk
 
 
 def get_eth_keys(filename = "eth_mnemonic.txt"):
     w3 = Web3()
-    
-    # TODO: Generate or read (using the mnemonic secret) 
-    # the ethereum public/private keys
+    w3.eth.account.enable_unaudited_hdwallet_features()
+    acct,mnemonic_secret = w3.eth.account.create_with_mnemonic()
 
-    return eth_sk, eth_pk
-  
-def fill_order(order, txes=[]):
-    # TODO: 
-    # Match orders (same as Exchange Server II)
-    # Validate the order has a payment to back it (make sure the counterparty also made a payment)
-    # Make sure that you end up executing all resulting transactions!
+    eth_pk1 = acct.address
+    eth_sk = acct.key
     
-    pass
+    return eth_sk, eth_pk1
   
 def execute_txes(txes):
     if txes is None:
         return True
     if len(txes) == 0:
         return True
-    print( f"Trying to execute {len(txes)} transactions" )
-    print( f"IDs = {[tx['order_id'] for tx in txes]}" )
-    eth_sk, eth_pk = get_eth_keys()
+    eth_sk, eth_pk1 = get_eth_keys()
     algo_sk, algo_pk = get_algo_keys()
-    
-    if not all( tx['platform'] in ["Algorand","Ethereum"] for tx in txes ):
-        print( "Error: execute_txes got an invalid platform!" )
-        print( tx['platform'] for tx in txes )
-
     algo_txes = [tx for tx in txes if tx['platform'] == "Algorand" ]
     eth_txes = [tx for tx in txes if tx['platform'] == "Ethereum" ]
-
-    # TODO: 
-    #       1. Send tokens on the Algorand and eth testnets, appropriately
-    #          We've provided the send_tokens_algo and send_tokens_eth skeleton methods in send_tokens.py
-    #       2. Add all transactions to the TX table
 
     pass
 
@@ -148,24 +123,24 @@ def address():
     if request.method == "POST":
         content = request.get_json(silent=True)
         if 'platform' not in content.keys():
-            print( f"Error: no platform provided" )
             return jsonify( "Error: no platform provided" )
         if not content['platform'] in ["Ethereum", "Algorand"]:
-            print( f"Error: {content['platform']} is an invalid platform" )
             return jsonify( f"Error: invalid platform provided: {content['platform']}"  )
         
         if content['platform'] == "Ethereum":
             #Your code here
-            return jsonify( eth_pk )
+            eth_sk, eth_pk1 = get_eth_keys()
+            return jsonify( eth_pk1 )
         if content['platform'] == "Algorand":
             #Your code here
+            algo_sk, algo_pk = get_algo_keys()
             return jsonify( algo_pk )
 
 @app.route('/trade', methods=['POST'])
 def trade():
     print( "In trade", file=sys.stderr )
     connect_to_blockchains()
-    get_keys()
+    #get_keys()
     if request.method == "POST":
         content = request.get_json(silent=True)
         columns = [ "buy_currency", "sell_currency", "buy_amount", "sell_amount", "platform", "tx_id", "receiver_pk"]
@@ -189,26 +164,25 @@ def trade():
             return jsonify( False )
         
         # Your code here
-        
-        # 1. Check the signature
-        
-        # 2. Add the order to the table
-        
-        # 3a. Check if the order is backed by a transaction equal to the sell_amount (this is new)
-
-        # 3b. Fill the order (as in Exchange Server II) if the order is valid
-        
-        # 4. Execute the transactions
-        
-        # If all goes well, return jsonify(True). else return jsonify(False)
         return jsonify(False)
 
 @app.route('/order_book')
 def order_book():
-    fields = [ "buy_currency", "sell_currency", "buy_amount", "sell_amount", "signature", "tx_id", "receiver_pk", "sender_pk" ]
-    
     # Same as before
-    pass
+    data = g.session.query(Order)
+    result = []
+    for d in data:
+        dic = {}
+        dic['sender_pk'] = d.sender_pk
+        dic['receiver_pk'] = d.receiver_pk
+        dic['buy_currency'] = d.buy_currency
+        dic['sell_currency'] = d.sell_currency
+        dic['buy_amount'] = d.buy_amount
+        dic['sell_amount'] = d.sell_amount
+        dic['tx_id'] = d.tx_id
+        result.append(dic)
+    resultDict = {'data': result}
+    return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(port='5002')
+    app.run(port='5002', debug = True)
